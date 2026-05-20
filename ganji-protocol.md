@@ -1,4 +1,4 @@
-# GANJI Protocol
+# Ganji Protocol
 
 **Author:** James Kabingu -- Vektasafe
 **Category:** Financial Markets Research
@@ -6,9 +6,9 @@
 
 ---
 
-## What Is GANJI Protocol
+## What Is Ganji Protocol
 
-GANJI Protocol is a forex manipulation detection and signal intelligence system built specifically for East African currency markets. It monitors live currency pair data, detects statistical anomalies consistent with central bank intervention and institutional manipulation, and surfaces those signals to subscribers before the manipulation fully plays out in the market.
+Ganji Protocol is a forex manipulation detection and signal intelligence system built specifically for East African currency markets. It monitors live currency pair data, detects statistical anomalies consistent with central bank intervention and institutional manipulation, and surfaces those signals to subscribers before the manipulation fully plays out in the market.
 
 The name comes from Kenyan Sheng. Ganji means money. The protocol is built around money -- specifically, around who is moving it, when, and why.
 
@@ -22,13 +22,13 @@ The East African forex market is not a free market. It is a managed market. Cent
 
 The result is predictable. A retail trader in Nairobi opens a long position on KES/USD based on technical analysis. Unknown to them, the CBK has been quietly selling dollars into the market to defend the shilling ahead of a debt repayment deadline. The position moves against them. They lose. The CBK was always going to do what it did -- the information existed, it just was not accessible to them.
 
-GANJI Protocol exists to close that information gap.
+Ganji Protocol exists to close that information gap.
 
 ### The KES Case
 
 The Kenyan shilling crossed 100 KES per USD during Uhuru Kenyatta's presidency and has never recovered. This is not a market outcome -- it is a managed depreciation. Kenya's dollar-denominated debt obligations, IMF programme conditionalities, and export competitiveness objectives all create institutional incentives to allow the shilling to weaken in controlled steps.
 
-The pattern is detectable. Intervention leaves statistical fingerprints. GANJI Protocol reads those fingerprints.
+The pattern is detectable. Intervention leaves statistical fingerprints. Ganji Protocol reads those fingerprints.
 
 ### The Regional Picture
 
@@ -42,13 +42,13 @@ East Africa has five significant currency markets with documented intervention h
 | RWF | National Bank of Rwanda | Tightly managed, low volatility by design |
 | ETB | National Bank of Ethiopia | Fixed rate until 2024, recent float with heavy management |
 
-No existing system monitors these pairs for manipulation signals. Bloomberg terminals do not cover them at the granularity needed. No Western quant firm is watching KES/UGX. This is the gap GANJI Protocol fills.
+No existing system monitors these pairs for manipulation signals. Bloomberg terminals do not cover them at the granularity needed. No Western quant firm is watching KES/UGX. This is the gap Ganji Protocol fills.
 
 ---
 
 ## What Manipulation Looks Like
 
-Forex manipulation at the sovereign and institutional level is not the same as DeFi oracle manipulation. It operates over longer timeframes, uses legal instruments, and leaves different statistical signatures. Understanding what to look for is the foundation of GANJI Protocol's detection layer.
+Forex manipulation at the sovereign and institutional level is not the same as DeFi oracle manipulation. It operates over longer timeframes, uses legal instruments, and leaves different statistical signatures. Understanding what to look for is the foundation of Ganji Protocol's detection layer.
 
 ### 1. Central Bank Intervention
 
@@ -87,7 +87,7 @@ Currency movements around elections, budget announcements, and IMF review comple
 
 ## The Detection Architecture
 
-GANJI Protocol operates as a three-layer system:
+Ganji Protocol operates as a three-layer system:
 
 ### Layer 1: Data Ingestion
 
@@ -136,7 +136,7 @@ This signal is what subscribers pay for.
 
 ## Business Model
 
-GANJI Protocol is infrastructure. It generates revenue by selling signal access, not by trading.
+Ganji Protocol is infrastructure. It generates revenue by selling signal access, not by trading.
 
 ### Tier 1 -- Retail Signal Feed: $20/month
 - Daily manipulation signal digest for KES/USD, KES/UGX, KES/TZS
@@ -180,7 +180,7 @@ No Silicon Valley startup is thinking about KES/UGX. The pairs are exotic, the v
 East African central banks publish reference rates in inconsistent formats, on inconsistent schedules, through inconsistent channels. Aggregating this data is a non-trivial engineering problem that requires knowing where to look. Again, local knowledge is the moat.
 
 **3. Nobody has combined statistical anomaly detection with LLM reasoning for this use case.**
-The statistical signatures of central bank intervention are documented in academic literature. The tools to detect them exist. The LLMs to reason about them and generate human-readable signals exist. Nobody has connected the pieces for East African forex. GANJI Protocol connects them.
+The statistical signatures of central bank intervention are documented in academic literature. The tools to detect them exist. The LLMs to reason about them and generate human-readable signals exist. Nobody has connected the pieces for East African forex. Ganji Protocol connects them.
 
 ---
 
@@ -202,7 +202,7 @@ The statistical signatures of central bank intervention are documented in academ
 ### Phase 3 -- Regional Expansion
 - Add UGX, TZS, RWF pairs
 - Licensed interbank data feeds
-- On-chain anchoring of manipulation events (GANJI Protocol x OCTIO architecture)
+- On-chain anchoring of manipulation events (Ganji Protocol x OCTIO architecture)
 - Institutional API with SLA guarantees
 
 ### Phase 4 -- Platform
@@ -214,12 +214,12 @@ The statistical signatures of central bank intervention are documented in academ
 
 ## Connection to Existing Research
 
-GANJI Protocol sits at the intersection of two existing Vektasafe research documents:
+Ganji Protocol sits at the intersection of two existing Vektasafe research documents:
 
 - **Tokenised Forex and the On-Chain Financial Attack Surface** -- established how forex markets are being brought on-chain and the attack vectors that emerge
 - **How DeFi Protocols Get Exploited Through Market Manipulation** -- established how manipulation works at the protocol level
 
-GANJI Protocol addresses the layer beneath both: the traditional forex manipulation that happens before any DeFi protocol sees the price. If the CBK is intervening in KES/USD, that intervention will eventually propagate to any on-chain KES instrument. GANJI detects it at the source.
+Ganji Protocol addresses the layer beneath both: the traditional forex manipulation that happens before any DeFi protocol sees the price. If the CBK is intervening in KES/USD, that intervention will eventually propagate to any on-chain KES instrument. GANJI detects it at the source.
 
 ---
 
