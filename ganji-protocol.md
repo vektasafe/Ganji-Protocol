@@ -126,9 +126,11 @@ GANJI outputs a signal for each detected anomaly:
   "direction": "KES_SUPPORT",
   "reasoning": "Price reversal at 132.50 with no corresponding economic data release. Level has been defended twice in the past 90 days. Cross-pair movements inconsistent with regional dollar strength.",
   "historical_precedent": "CBK intervention pattern consistent with pre-debt-repayment dollar sales observed in March 2024 and September 2023.",
-  "recommended_action": "AVOID_KES_SHORT -- intervention likely to continue for 24-72 hours"
+  "signal_context": "Intervention likely to continue for 24-72 hours based on historical CBK pattern at this level. This is informational only -- the subscriber decides what to do with this signal."
 }
 ```
+
+> **Regulatory note:** The signal output deliberately omits a `recommended_action` field. Outputting directional trade instructions constitutes financial advice requiring a Capital Markets Authority licence under the Capital Markets Act. `signal_context` is informational only.
 
 This signal is what subscribers pay for.
 
