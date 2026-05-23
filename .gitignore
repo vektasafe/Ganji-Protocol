@@ -5,6 +5,9 @@ research/SCRAPER.md
 scraper/
 data/
 
+# Category 4 deep-dive research: local only until ready for publication
+research/04-deep-dives/
+
 # Environment
 .env
 __pycache__/
