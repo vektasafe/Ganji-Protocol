@@ -1,0 +1,14 @@
+# Ganji Protocol .gitignore
+
+# Scraper: not pushed until build is complete and validated
+research/SCRAPER.md
+scraper/
+data/
+
+# Environment
+.env
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
