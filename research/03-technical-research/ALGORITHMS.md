@@ -1,7 +1,7 @@
 # Ganji Protocol: Algorithm Technical Research
 
 **Author:** James Kabingu, OCTIO-Labs | Vektasafe
-**Status:** Living document; incomplete. Pillars 2 and 3 pending.
+**Status:** Living document; complete. All three pillars written.
 **Scope:** Technical decomposition of algorithm classes operating in markets Ganji Protocol monitors
 **Cross-reference:** See ENTITIES.md for entity-by-entity application of these algorithms
 
@@ -411,15 +411,242 @@ def vwap_volume_anomaly(
 
 ---
 
-## Pillar 2: Forex Algorithms (Pending)
+## Pillar 2: Forex Algorithms
 
-*To be completed. Scope: CBK BMatch order book mechanics, bank treasury desk algorithms, broker execution algorithms, interbank market microstructure.*
+### 2.1 The KES/USD Interbank Market Structure
+
+The KES/USD interbank market operates through the CBK's BMatch electronic matching system: an anonymous central limit order book where CBK intervention orders are indistinguishable from commercial bank orders. This anonymity is the core detection challenge Ganji Protocol solves.
+
+**Market participants by tier:**
+
+| Tier | Participants | Information access |
+|------|-------------|-------------------|
+| 1 | CBK, Tier 1 bank treasury desks | Execute CBK orders; know intervention is happening |
+| 2 | Mid-tier banks | See price impact; infer intervention |
+| 3 | Retail forex brokers (FXPesa, Scope Markets) | See published rates; find out after the move |
+| 4 | Retail traders | Find out last |
+
+**Daily volume:** Approximately $200 to $500 million USD equivalent. Thin by global standards. A single CBK order of $50 million represents 10 to 25% of daily volume, creating disproportionate price impact (high Kyle lambda).
+
+**Trading hours:** 09:00 to 16:00 EAT, Monday to Friday. The overnight gap means information accumulated overnight is incorporated in a single opening price move.
 
 ---
 
-## Pillar 3: Crypto and Mobile Money Algorithms (Pending)
+### 2.2 Algorithm Class F: CBK BMatch Intervention Algorithm
 
-*To be completed. Scope: Trade For Impact's Zignaly-based strategies, Binance P2P KES/USDT pricing mechanics, M-Pesa routing algorithms and their effect on KES liquidity.*
+**Documentation status:** Inferred from market structure and academic literature. CBK does not publish its execution methodology.
+
+**Academic foundation:**
+- Menkhoff, L. (2013). Foreign Exchange Intervention in Emerging Markets. *World Economy*, 36(9), 1187-1208.
+- Fratzscher, M. et al. (2019). When Is Foreign Exchange Intervention Effective? *American Economic Journal: Macroeconomics*, 11(1), 132-156.
+- Almgren, R. and Chriss, N. (2001). Optimal Execution of Portfolio Transactions. *Journal of Risk*, 3(2), 5-39.
+
+**How the algorithm works:**
+
+The CBK's intervention is an execution problem in the Almgren-Chriss sense. It must buy or sell large USD quantities without moving the market against itself. The inferred execution sequence has two phases:
+
+**Phase 1: Gradual accumulation (low urgency)**
+
+The CBK spreads orders across multiple sessions to minimise market impact. Observable signature: GVCI suppression (volatility compressed as CBK absorbs orders on both sides).
+
+$$x_t^* = X \cdot \frac{\sinh(\kappa(T-t))}{\sinh(\kappa T)} \quad \text{(low } \kappa \text{: even distribution)}$$
+
+**Phase 2: Urgent execution (high urgency)**
+
+When the CBK needs to achieve its target rate quickly, it executes urgently. Observable signature: Z-score spike (large price move in a single session).
+
+$$x_t^* = X \cdot \frac{\sinh(\kappa(T-t))}{\sinh(\kappa T)} \quad \text{(high } \kappa \text{: front-loaded)}$$
+
+**The sequence pattern:** GVCI suppression (Phase 1) followed by Z-score spike (Phase 2) is the strongest CBK intervention signature in the Ganji Protocol detection engine. It corresponds to the transition from gradual to urgent execution. `[VALIDATED]`
+
+---
+
+### 2.3 Algorithm Class G: Bank Treasury Desk Market Making
+
+**Documentation status:** Fully documented in academic literature. Specific CBK application inferred.
+
+**Academic foundation:**
+- Avellaneda, M. and Stoikov, S. (2008). High-frequency Trading in a Limit Order Book. *Quantitative Finance*, 8(3), 217-224.
+- Ho, T. and Stoll, H. (1981). Optimal Dealer Pricing. *Journal of Financial Economics*, 9(1), 47-73.
+- Glosten, L. and Milgrom, P. (1985). Bid, Ask and Transaction Prices. *Journal of Financial Economics*, 14(1), 71-100.
+
+**How the algorithm works:**
+
+Tier 1 bank treasury desks continuously quote bid and ask prices for KES/USD. The Avellaneda-Stoikov optimal quotes adjust for inventory and anticipated volatility:
+
+$$P_{bid}^* = P_{mid} - \frac{\gamma \sigma^2 (T-t)}{2} - \frac{1}{\gamma} \ln\left(1 + \frac{\gamma}{\kappa}\right) - \gamma \sigma^2 (T-t) q$$
+
+$$P_{ask}^* = P_{mid} + \frac{\gamma \sigma^2 (T-t)}{2} + \frac{1}{\gamma} \ln\left(1 + \frac{\gamma}{\kappa}\right) - \gamma \sigma^2 (T-t) q$$
+
+When the CBK is intervening, bank treasury desks widen their spreads because anticipated volatility $\sigma^2$ rises and adverse selection risk $\mu$ rises (the CBK is the informed trader).
+
+**The aggregate spread signal:**
+
+$$\text{Spread signal}_t = \frac{1}{N} \sum_{i=1}^{N} (P_{ask,i,t} - P_{bid,i,t}) - \overline{\text{Spread}}_{30}$$
+
+When this exceeds its 30-day mean by more than one standard deviation, bank treasury desks are collectively pulling liquidity. This is a leading indicator of a KES move within 2 to 8 hours. `[HYPOTHESIS - Phase 2]`
+
+---
+
+### 2.4 Algorithm Class H: Retail Forex Broker Execution
+
+**Documentation status:** Fully documented. STP and market maker models are standard industry practice.
+
+**Two execution models:**
+
+**STP (Straight-Through Processing):** Broker passes client orders to a liquidity provider. No directional exposure. Client order flow is a retail sentiment signal.
+
+**Market Maker (Dealing Desk):** Broker takes the other side of client trades. When retail clients are overwhelmingly long KES/USD, the broker is net short and hedges in the interbank market.
+
+**The contrarian signal:**
+
+$$\text{Retail long ratio} > 0.75 \implies \text{KES/USD likely to fall (contrarian)}$$
+$$\text{Retail long ratio} < 0.25 \implies \text{KES/USD likely to rise (contrarian)}$$
+
+CMA-licensed brokers do not publish positioning data. The Binance P2P order book is the closest public proxy. `[HYPOTHESIS - Phase 2]`
+
+---
+
+### 2.5 Algorithm Class I: EAC Triangular Arbitrage
+
+**Documentation status:** Theoretical basis fully documented. EAC-specific application is a Ganji Protocol original contribution.
+
+**The triangular consistency condition:**
+
+$$P_{KES/TZS} = P_{KES/UGX} \times P_{UGX/TZS}$$
+
+When violated, a triangular arbitrage opportunity exists. In the thin EAC interbank market, inconsistencies persist for hours to days.
+
+**Detection signal:**
+
+$$\text{Inconsistency}_t = |\ln P_{KES/TZS,t} - \ln P_{KES/UGX,t} - \ln P_{UGX/TZS,t}|$$
+
+**Implementation:**
+
+```python
+def triangular_inconsistency(
+    kes_usd: float, ugx_usd: float, tzs_usd: float,
+    epsilon: float = 0.005
+) -> dict:
+    import math
+    kes_tzs_direct = kes_usd / tzs_usd
+    kes_tzs_cross  = (kes_usd / ugx_usd) * (ugx_usd / tzs_usd)
+    inconsistency  = abs(math.log(kes_tzs_direct) - math.log(kes_tzs_cross))
+    return {
+        "inconsistency": round(inconsistency, 6),
+        "fired":         inconsistency > epsilon,
+    }
+```
+
+When the inconsistency fires while the CPII also fires, it confirms the CBK is the specific intervener rather than a broad USD event. `[HYPOTHESIS - Phase 2]`
+
+---
+
+### 2.6 Pillar 2 Signal Summary
+
+| Signal | Algorithm | Phase | Status |
+|--------|-----------|-------|--------|
+| GVCI suppression then Z-score spike | CBK BMatch execution (Class F) | 1 | Validated |
+| Bank spread widening | Treasury desk market making (Class G) | 2 | Hypothesis |
+| Retail contrarian | Broker execution (Class H) | 2 | Hypothesis |
+| Triangular inconsistency | EAC triangular arbitrage (Class I) | 2 | Hypothesis |
+
+---
+
+## Pillar 3: Crypto and Mobile Money Algorithms
+
+### 3.1 The Crypto-KES Interface
+
+The crypto ecosystem intersects with the KES/USD market at three points: Binance P2P (informal KES/USDT exchange), Kotani Pay (on-chain to M-Pesa bridge), and Yellow Card (centralised KES/USDT exchange). Each creates a detectable signal layer that the official CBK rate does not capture.
+
+---
+
+### 3.2 Algorithm Class J: Binance P2P Merchant Pricing Algorithm
+
+**Documentation status:** Inferred from platform mechanics.
+
+**How the algorithm works:**
+
+Active merchants update KES/USDT prices every 1 to 5 minutes via the Binance merchant API. The pricing algorithm responds to three inputs: the Binance spot USDT/USD rate, competitor merchant prices, and merchant inventory levels (the Avellaneda-Stoikov inventory adjustment applied to P2P merchants).
+
+**The P2P premium formula:**
+
+$$BPPS_t = \frac{P_{P2P,t} - P_{CBK,t}}{P_{CBK,t}}$$
+
+| BPPS value | Interpretation | Ganji Protocol signal |
+|-----------|---------------|----------------------|
+| > +0.5% | Capital flight: excess demand for USDT | F6 capital flight flag |
+| 0 to +0.5% | Normal liquidity premium | No signal |
+| < -0.5% | CBK suppression: official rate above market | F6 suppression flag |
+
+**Ganji Protocol signal implication:** The BPPS signal (F6) is implemented and live. Validated prospectively from May 2026. `[IMPLEMENTED]`
+
+---
+
+### 3.3 Algorithm Class K: Zignaly Signal Provider Execution
+
+**Documentation status:** Partially documented from platform specifications. Trade For Impact's specific parameters are proprietary.
+
+**How the algorithm works:**
+
+Trade For Impact (ENTITIES.md Entity 3.1) generates buy and sell signals for cryptocurrency pairs. Most likely strategy types:
+
+- **Dual SMA crossover:** $\text{Buy when } SMA_{fast} > SMA_{slow}$
+- **RSI mean reversion:** Buy when $RSI_{14} < 30$; sell when $RSI_{14} > 70$
+- **DCA:** Fixed-size buy at regular intervals regardless of price
+
+Zignaly executes on the client's Binance account via API key. Trade For Impact never holds client funds.
+
+**The KES/USDT conversion signal:**
+
+When 300+ clients simultaneously convert KES to USDT (entry) or USDT to KES (exit), it creates a temporary spike in Binance P2P volume. A P2P volume spike without a corresponding CBK rate move is a retail sentiment signal, not an intervention signal. The BPPS signal must distinguish between retail bot activity and genuine capital flight. `[HYPOTHESIS - Phase 2]`
+
+---
+
+### 3.4 Algorithm Class L: Kotani Pay Conversion Routing Algorithm
+
+**Documentation status:** Partially documented from platform specifications.
+
+**How the algorithm works:**
+
+Kotani Pay converts on-chain stablecoins to KES via M-Pesa in four steps:
+
+1. User sends USDT to Kotani Pay's smart contract. Contract emits `StablecoinReceived` event.
+2. Kotani Pay calculates KES disbursement: $\text{KES} = \text{USDT} \times P_{KP,t} \times (1 - \text{fee})$
+3. Kotani Pay initiates M-Pesa B2C payment via Safaricom Daraja API.
+4. Recipient receives KES in M-Pesa wallet within seconds.
+
+**Ganji Protocol signal implication:** On-chain USDT inflows to Kotani Pay's smart contract addresses are publicly visible on blockchain explorers. A spike signals high KES-to-USDT conversion demand (capital flight). `[RESEARCH DIRECTION - Phase 3]`
+
+---
+
+### 3.5 Algorithm Class M: M-Pesa Float Management Algorithm
+
+**Documentation status:** Partially documented from Safaricom Daraja API documentation and CBK monthly statistics.
+
+**The float decline signal:**
+
+When the M-Pesa float balance falls more than 5% month-on-month without a corresponding increase in transaction volume, customers are withdrawing KES from the M-Pesa system (converting to cash or USDT):
+
+$$\text{Float signal}: \quad \frac{F_t - F_{t-1}}{F_{t-1}} < -0.05 \quad \text{and} \quad \Delta V_t \approx 0$$
+
+**The agent spread signal:**
+
+M-Pesa agents set their own cash-in and cash-out rates within CBK limits. When agents widen their spread, it signals cash scarcity at the ground level, preceding the official CBK rate move by hours to days. This is the most granular KES signal available and the one no Bloomberg terminal captures.
+
+**Ganji Protocol signal implication:** Float decline is a Phase 2 feature (CBK monthly statistics, 4 to 6 week lag). Agent spread is a Phase 3 feature (direct market observation). `[HYPOTHESIS]`
+
+---
+
+### 3.6 Pillar 3 Signal Summary
+
+| Signal | Algorithm | Phase | Status |
+|--------|-----------|-------|--------|
+| Binance P2P premium (BPPS) | P2P merchant pricing (Class J) | 1 | Implemented, live |
+| P2P volume spike | Zignaly bot execution (Class K) | 2 | Hypothesis |
+| On-chain USDT inflows to Kotani Pay | Kotani Pay routing (Class L) | 3 | Research direction |
+| M-Pesa float decline | M-Pesa float management (Class M) | 2 | Hypothesis |
+| M-Pesa agent spread widening | M-Pesa agent network (Class M) | 3 | Research direction |
 
 ---
 
