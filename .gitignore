@@ -1,17 +1,24 @@
 # Ganji Protocol .gitignore
 
+# Engine: local only until ready for publication
+engine/
+config/
+data/
+tests/
+
 # Scraper: not pushed until build is complete and validated
 research/SCRAPER.md
 scraper/
-data/
 
 # Category 4 deep-dive research: local only until ready for publication
 research/04-deep-dives/
 
 # Environment
 .env
+.env.*
 __pycache__/
 *.pyc
 *.pyo
 .venv/
 venv/
+requirements.txt
