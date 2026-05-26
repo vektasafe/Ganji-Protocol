@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ganji Protocol | KES/USD Signal Intelligence</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 1px solid #21262d;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #58a6ff;
+    }
+
+    .logo span { color: #e6edf3; }
+
+    .pair-badge {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 13px;
+      color: #8b949e;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 24px;
+    }
+
+    .signal-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .signal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .confidence-badge {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 8px 20px;
+      border-radius: 8px;
+    }
+
+    .confidence-HIGH    { background: #1a3a2a; color: #3fb950; border: 1px solid #3fb950; }
+    .confidence-MEDIUM  { background: #3a2a0a; color: #d29922; border: 1px solid #d29922; }
+    .confidence-LOW     { background: #1a1a3a; color: #58a6ff; border: 1px solid #58a6ff; }
+    .confidence-NONE    { background: #1c1c1c; color: #8b949e; border: 1px solid #30363d; }
+    .confidence-LOADING { background: #1c1c1c; color: #8b949e; border: 1px solid #30363d; }
+
+    .signal-meta { text-align: right; color: #8b949e; font-size: 12px; line-height: 1.8; }
+    .signal-meta strong { color: #e6edf3; }
+
+    .direction-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .direction-label { color: #8b949e; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+
+    .direction-value {
+      font-size: 15px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 4px;
+    }
+
+    .dir-KES_SUPPORT       { background: #1a3a2a; color: #3fb950; }
+    .dir-KES_FLOOR_DEFENCE { background: #3a1a2a; color: #f85149; }
+    .dir-INDETERMINATE     { background: #1c1c1c; color: #8b949e; }
+
+    .cips-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .cips-label { color: #8b949e; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+
+    .cips-bar-wrap {
+      flex: 1;
+      background: #0d1117;
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .cips-bar {
+      height: 100%;
+      border-radius: 4px;
+      background: #58a6ff;
+      transition: width 0.6s ease;
+    }
+
+    .cips-value { font-size: 15px; font-weight: 700; color: #e6edf3; min-width: 32px; text-align: right; }
+
+    .context-box {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 16px;
+      line-height: 1.7;
+      color: #c9d1d9;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b949e;
+      margin-bottom: 12px;
+    }
+
+    .components-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .component-card {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .component-name {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #8b949e;
+      margin-bottom: 6px;
+    }
+
+    .component-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #e6edf3;
+      margin-bottom: 4px;
+    }
+
+    .component-fired-yes { color: #3fb950; }
+    .component-fired-no  { color: #8b949e; }
+
+    .component-detail {
+      font-size: 11px;
+      color: #8b949e;
+      line-height: 1.6;
+    }
+
+    .component-points {
+      display: inline-block;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 11px;
+      color: #58a6ff;
+      margin-top: 4px;
+    }
+
+    .flags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .flag-badge {
+      background: #3a2a0a;
+      color: #d29922;
+      border: 1px solid #d29922;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+    }
+
+    .regulatory-note {
+      font-size: 11px;
+      color: #6e7681;
+      line-height: 1.6;
+      border-top: 1px solid #21262d;
+      padding-top: 16px;
+      margin-top: 4px;
+    }
+
+    .sequence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1a2a3a;
+      border: 1px solid #58a6ff;
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: #58a6ff;
+      margin-bottom: 16px;
+    }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #58a6ff; }
+
+    .error-box {
+      background: #3a1a1a;
+      border: 1px solid #f85149;
+      border-radius: 8px;
+      padding: 16px;
+      color: #f85149;
+      text-align: center;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: #6e7681;
+      font-size: 12px;
+      border-top: 1px solid #21262d;
+      margin-top: 40px;
+    }
+
+    footer a { color: #58a6ff; text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .signal-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .signal-meta { text-align: left; }
+      .components-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Ganji<span>Protocol</span></div>
+  <div class="pair-badge">KES / USD &nbsp;·&nbsp; East Africa FX Intelligence</div>
+</header>
+
+<main>
+  <div id="signal-container">
+    <div class="signal-card">
+      <div class="signal-header">
+        <div class="confidence-badge confidence-LOADING">LOADING</div>
+        <div class="signal-meta">Fetching signal...</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Ganji Protocol &nbsp;·&nbsp; OCTIO-Labs | Vektasafe &nbsp;·&nbsp;
+  Signal intelligence for East African forex markets &nbsp;·&nbsp;
+  <a href="https://github.com/vektasafe/Ganji-Protocol" target="_blank">GitHub</a>
+  <br><br>
+  <em>"The crowd is both friend and enemy." &nbsp;— Robert Ludlum, The Jason Bourne series</em>
+</footer>
+
+<script>
+  const MAX_CIPS = 10;
+
+  function confidenceClass(c) {
+    return 'confidence-' + (c || 'NONE');
+  }
+
+  function directionClass(d) {
+    return 'dir-' + (d || 'INDETERMINATE');
+  }
+
+  function directionLabel(d) {
+    const map = {
+      'KES_SUPPORT':       'KES Support',
+      'KES_FLOOR_DEFENCE': 'Floor Defence',
+      'INDETERMINATE':     'Indeterminate',
+    };
+    return map[d] || d;
+  }
+
+  function firedLabel(fired) {
+    return fired
+      ? '<span class="component-fired-yes">&#10003; FIRED</span>'
+      : '<span class="component-fired-no">&#8212; inactive</span>';
+  }
+
+  function renderSignal(s) {
+    const det  = s.detection  || {};
+    const comp = s.components || {};
+    const ctx  = s.context    || {};
+
+    const confidence = det.confidence || 'NONE';
+    const direction  = det.direction  || 'INDETERMINATE';
+    const score      = det.cips_score || 0;
+    const barWidth   = Math.min(100, Math.round((score / MAX_CIPS) * 100));
+
+    const flags = (ctx.calendar_flags || []).map(f =>
+      `<span class="flag-badge">${f}</span>`
+    ).join('');
+
+    const sequenceBadge = det.sequence_pattern
+      ? `<div class="sequence-badge"><div class="dot"></div>Sequence pattern detected: suppression preceded spike</div>`
+      : '';
+
+    const z  = comp.z_score  || {};
+    const cp = comp.cpii     || {};
+    const gv = comp.gvci     || {};
+    const nl = comp.nlp_tone || {};
+    const bp = comp.bpps     || {};
+
+    const html = `
+      <div class="signal-card">
+        <div class="signal-header">
+          <div class="confidence-badge ${confidenceClass(confidence)}">${confidence}</div>
+          <div class="signal-meta">
+            <div><strong>${s.signal_id || '&mdash;'}</strong></div>
+            <div>${s.timestamp || '&mdash;'}</div>
+            <div>Pipeline v${s.pipeline_version || '&mdash;'}</div>
+          </div>
+        </div>
+
+        <div class="direction-row">
+          <span class="direction-label">Direction</span>
+          <span class="direction-value ${directionClass(direction)}">${directionLabel(direction)}</span>
+        </div>
+
+        <div class="cips-row">
+          <span class="cips-label">CIPS Score</span>
+          <div class="cips-bar-wrap">
+            <div class="cips-bar" style="width:${barWidth}%"></div>
+          </div>
+          <span class="cips-value">${score}</span>
+        </div>
+
+        ${sequenceBadge}
+
+        <div class="section-title">Signal Context</div>
+        <div class="context-box">${s.signal_context || 'No context available.'}</div>
+
+        ${flags ? `<div class="section-title">Calendar Flags</div><div class="flags-row">${flags}</div>` : ''}
+
+        <div class="section-title">Component Breakdown</div>
+        <div class="components-grid">
+
+          <div class="component-card">
+            <div class="component-name">F1 &nbsp; Z-Score</div>
+            <div class="component-value">${z.value != null ? z.value.toFixed(3) : '&mdash;'}</div>
+            <div class="component-detail">
+              ${firedLabel(z.threshold_low_fired)}<br>
+              High threshold: ${z.threshold_high_fired ? 'yes' : 'no'}
+            </div>
+            <span class="component-points">+${z.points || 0} pts</span>
+          </div>
+
+          <div class="component-card">
+            <div class="component-name">F2 &nbsp; CPII</div>
+            <div class="component-value">${cp.cpii_z_value != null ? cp.cpii_z_value.toFixed(3) : '&mdash;'}</div>
+            <div class="component-detail">
+              ${firedLabel(cp.fired)}<br>
+              KES: ${cp.kes_return != null ? (cp.kes_return * 100).toFixed(3) + '%' : '&mdash;'} &nbsp;
+              Basket: ${cp.basket_return != null ? (cp.basket_return * 100).toFixed(3) + '%' : '&mdash;'}
+            </div>
+            <span class="component-points">+${cp.points || 0} pts</span>
+          </div>
+
+          <div class="component-card">
+            <div class="component-name">F3 &nbsp; GVCI</div>
+            <div class="component-value">${gv.gvci_value != null ? gv.gvci_value.toFixed(4) : '&mdash;'}</div>
+            <div class="component-detail">
+              ${firedLabel(gv.fired)}<br>
+              Threshold: ${gv.threshold || 0.3} &nbsp;
+              Recent suppression: ${gv.recent_suppression ? 'yes' : 'no'}
+            </div>
+            <span class="component-points">+${gv.points || 0} pts</span>
+          </div>
+
+          <div class="component-card">
+            <div class="component-name">F5 &nbsp; NLP Tone</div>
+            <div class="component-value" style="font-size:15px">${nl.tone || 'NEUTRAL'}</div>
+            <div class="component-detail">
+              ${nl.key_phrases && nl.key_phrases.length
+                ? nl.key_phrases.join(', ')
+                : 'No key phrases'}
+            </div>
+            <span class="component-points">${(nl.points || 0) >= 0 ? '+' : ''}${nl.points || 0} pts</span>
+          </div>
+
+          <div class="component-card">
+            <div class="component-name">F6 &nbsp; BPPS</div>
+            <div class="component-value">${bp.premium != null ? (bp.premium * 100).toFixed(3) + '%' : '&mdash;'}</div>
+            <div class="component-detail">
+              P2P: ${bp.p2p_mean || '&mdash;'} &nbsp; CBK: ${bp.cbk_rate || '&mdash;'}<br>
+              Capital flight: ${bp.capital_flight ? 'YES' : 'no'} &nbsp;
+              Suppression: ${bp.cbk_suppression ? 'YES' : 'no'}
+            </div>
+            <span class="component-points">+${bp.points || 0} pts</span>
+          </div>
+
+        </div>
+
+        <div class="regulatory-note">${s.regulatory_note || ''}</div>
+      </div>
+    `;
+
+    document.getElementById('signal-container').innerHTML = html;
+  }
+
+  function renderError(msg) {
+    document.getElementById('signal-container').innerHTML = `
+      <div class="error-box">
+        <strong>Signal unavailable</strong><br>${msg}
+      </div>
+    `;
+  }
+
+  fetch('data/latest_signal.json')
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(renderSignal)
+    .catch(e => renderError(e.message));
+</script>
+
+</body>
+</html>
