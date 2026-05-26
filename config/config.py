@@ -171,14 +171,14 @@ CIPS_WEIGHTS = {
     "rss":                      2,
     "nlp_intervention_imminent": 2,
     "nlp_hawkish":              1,
-    "nlp_neutral":              0,
+    "nlp_neutral":               0,
     "nlp_dovish":               -1,
     "bpps":                     1,
 }
 
-CIPS_HIGH_THRESHOLD   = 5
-CIPS_MEDIUM_THRESHOLD = 3
-CIPS_LOW_THRESHOLD    = 1
+CIPS_HIGH_THRESHOLD   = int(os.getenv("CIPS_HIGH_THRESHOLD", "5"))
+CIPS_MEDIUM_THRESHOLD = int(os.getenv("CIPS_MEDIUM_THRESHOLD", "3"))
+CIPS_LOW_THRESHOLD    = int(os.getenv("CIPS_LOW_THRESHOLD", "1"))
 
 # ─────────────────────────────────────────────
 # Seasonal Calendar Flags

@@ -102,6 +102,7 @@ def deliver_to_email(signal: dict) -> bool:
     smtp_port  = int(os.getenv("EMAIL_SMTP_PORT", "587"))
     smtp_user  = os.getenv("EMAIL_SMTP_USER", "")
     smtp_pass  = os.getenv("EMAIL_SMTP_PASS", "")
+    email_dry_run = os.getenv("EMAIL_DRY_RUN", "false").lower() in ("1", "true", "yes")
 
     if not all([email_from, email_to, smtp_host, smtp_user, smtp_pass]):
         log.debug("Email delivery: credentials not configured. Skipping.")
@@ -140,6 +141,10 @@ Component Breakdown:
 
 {signal['regulatory_note']}
         """.strip()
+
+        if email_dry_run:
+            log.info("Email delivery dry run enabled; skipping SMTP send.")
+            return True
 
         msg = MIMEMultipart()
         msg["From"]    = email_from

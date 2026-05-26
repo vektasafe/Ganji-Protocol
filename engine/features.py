@@ -124,6 +124,11 @@ def f2_cpii(rates: pd.DataFrame) -> FeatureResult:
     if r_kes is None or r_ugx is None or r_tzs is None:
         return FeatureResult("F2_CPII", False, status="VALIDATED", phase=2)
 
+    # Ensure date indexes are unique before alignment.
+    r_kes = r_kes[~r_kes.index.duplicated(keep='last')]
+    r_ugx = r_ugx[~r_ugx.index.duplicated(keep='last')]
+    r_tzs = r_tzs[~r_tzs.index.duplicated(keep='last')]
+
     combined = pd.DataFrame({"kes": r_kes, "ugx": r_ugx, "tzs": r_tzs}).dropna()
 
     if len(combined) < CPII_WINDOW + 1:
